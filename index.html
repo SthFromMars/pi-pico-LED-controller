@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <title>LED Controller</title>
+        <style>
+            .powerButton {
+                width: 300px;
+                height: 30px;
+            }
+            .colorDiv{
+                margin-top: 20px;
+            }
+            .colorTextBox {
+                width: 100px;
+                height: 30px;
+                font-size: large;
+            }
+            .textButton {
+                width: 150px;
+                height: 30px;
+            }
+            .wheel {
+                margin-top: 20px;
+            }
+            .brightness {
+                margin-top: 20px;
+                width: 300px;
+            }
+        </style>
+    </head>
+    <body>
+        <h2>LED Controller</h2>
+        
+        <button class="powerButton" id="powerButton"></button>
+        <div class="colorDiv">
+            #<input type="text" class="colorTextBox" id="colorTextBox">
+            <button class="textButton" id="textButton" type="button">Set color</button>
+        </div>
+        <div class="wheel" id="colorWheel"></div>
+        <input type="range" class="brightness" id="brightness" min="0" max="100">
+
+
+
+        <script src="https://cdn.jsdelivr.net/npm/@jaames/iro@5"></script>
+        <script>
+            let ON_TEXT = "Turn LEDs off"
+            let OFF_TEXT = "Turn LEDs on"
+            var colorWheel = new iro.ColorPicker("#colorWheel", {
+                layout: [
+                    {
+                        component: iro.ui.Wheel,
+                        options: {
+                            wheelLightness: true,
+                            wheelAngle: 0,
+                            wheelDirection: "anticlockwise",
+                        },
+                    },
+                ],
+            });
+            let powerButton = document.getElementById("powerButton")
+            let colorTextBox = document.getElementById("colorTextBox")
+            let textButton = document.getElementById("textButton")
+            let brightnessBar = document.getElementById("brightness")
+            function setState(state) {
+                if (state.turned_on) {
+                    powerButton.textContent = ON_TEXT
+                } else {
+                    powerButton.textContent = OFF_TEXT
+                }
+                colorTextBox.value = state.color.slice(1)
+                colorWheel.color.hexString = state.color
+                brightnessBar.value = state.brightness
+            }
+            async function getState() {
+                const res = await fetch('/getstate', {
+                    method:'GET',
+                });
+                if(!res.ok) {
+                    console.log(res.status)
+                    return
+                };
+                const state = await res.json();
+                setState(state);
+            }
+            async function setColor(color){
+                const res = await fetch('/setcolor', {
+                    method:'POST',
+                    headers:{'Content-Type':'application/json'},
+                    body: JSON.stringify({
+                        color: color, brightness: parseInt(brightnessBar.value)
+                    })
+                });
+                if(!res.ok) {
+                    console.log(res.status)
+                    return
+                };
+                const state = await res.json();
+                setState(state);
+            }
+            textButton.onclick = () => setColor('#' + colorTextBox.value);
+            colorWheel.on('input:end', _ => setColor(colorWheel.color.hexString));
+            brightnessBar.onchange = _ => setColor('#' + colorTextBox.value);
+            powerButton.onclick = async e => {
+                const turned_on = (e.target.textContent === OFF_TEXT)
+                const res = await fetch('/setpower', {
+                    method:'POST',
+                    headers:{'Content-Type':'application/json'},
+                    body: JSON.stringify({
+                        turned_on
+                    })
+                });
+                if(!res.ok) {
+                    console.log(res.status)
+                    return
+                };
+                const state = await res.json();
+                setState(state);
+            }
+            getState();
+        </script>
+    </body>
+</html>
