@@ -1,7 +1,7 @@
 from config import *
 from phew import server, connect_to_wifi
 import json
-from utils import initialize_pins, initialize_pwm, deinitialize, convert_hex_to_rgb, change_power, set_color
+from utils import initialize_pins, initialize_pwm, deinitialize, change_power, set_color
 from serialization import get_state, write_state
 import re
 

@@ -34,26 +34,34 @@ def deinitialize(pins, pwms):
         pin.off()
     sleep(0.1)
 
-def convert_hex_to_single_color(hex_color, id, brightness):
+def convert_hex_to_single_color(hex_color, id):
     bit8 = int(hex_color[id*2+1 : id*2+3], 16)
-    bit8 = round(bit8 * brightness / 100 )
     bit16 = bit8 * 257
     return bit16
 
-def convert_hex_to_rgb(hex_color, brightness):
+def convert_hex_to_rgb(hex_color):
     color = {
-        "red": convert_hex_to_single_color(hex_color, 0, brightness),
-        "green": convert_hex_to_single_color(hex_color, 1, brightness),
-        "blue": convert_hex_to_single_color(hex_color, 2, brightness)
+        "red": convert_hex_to_single_color(hex_color, 0),
+        "green": convert_hex_to_single_color(hex_color, 1),
+        "blue": convert_hex_to_single_color(hex_color, 2)
     }
     return color
 
 def set_color(state, pwms):
-    rgb = convert_hex_to_rgb(state["color"], state["brightness"])
+    rgb = convert_hex_to_rgb(state["color"])
+    if state["use_color_correction"]:
+        for color in rgb.keys():
+            rgb[color] = rgb[color] * COLOR_CORRECTION[color]
+        max_value = max(rgb.values())
+        if max_value < 65535:
+            ratio = 65535 / max_value
+            for color in rgb.keys():
+                rgb[color] *= ratio # type: ignore
+        for color in rgb.keys():
+            rgb[color] = round(rgb[color])
+
     for color in rgb.keys():
-        duty = rgb[color]
-        if state["use_color_correction"]:
-            duty = round(duty * COLOR_CORRECTION[color])
+        duty = round(rgb[color] * state["brightness"] / 100)
         pwms[color].duty_u16(duty)
 
 def change_power(state, pins, pwms):
