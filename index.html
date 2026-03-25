@@ -2,14 +2,15 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>LED Controller</title>
         <style>
+            .title {
+                text-align: center;
+            }
             .powerButton {
                 width: 300px;
                 height: 30px;
-            }
-            .colorDiv{
-                margin-top: 20px;
             }
             .colorTextBox {
                 width: 100px;
@@ -20,25 +21,24 @@
                 width: 150px;
                 height: 30px;
             }
-            .wheel {
-                margin-top: 20px;
-            }
             .brightness {
-                margin-top: 20px;
                 width: 300px;
             }
         </style>
     </head>
     <body>
-        <h2>LED Controller</h2>
-        
-        <button class="powerButton" id="powerButton"></button>
-        <div class="colorDiv">
-            #<input type="text" class="colorTextBox" id="colorTextBox">
-            <button class="textButton" id="textButton" type="button">Set color</button>
+        <div class="container">
+            <div class="box">
+                <h2 class="title">LED Controller</h2>
+                <button class="powerButton" id="powerButton"></button>
+                <div class="colorDiv">
+                    #<input type="text" class="colorTextBox" id="colorTextBox">
+                    <button class="textButton" id="textButton" type="button">Set color</button>
+                </div>
+                <input type="range" class="brightness" id="brightness" min="0" max="100">
+            </div>
+            <div class="wheel" id="colorWheel"></div>
         </div>
-        <div class="wheel" id="colorWheel"></div>
-        <input type="range" class="brightness" id="brightness" min="0" max="100">
 
 
 
@@ -55,6 +55,12 @@
                             wheelAngle: 0,
                             wheelDirection: "anticlockwise",
                         },
+                    },
+                    { 
+                    component: iro.ui.Slider,
+                    options: {
+                        sliderType: 'saturation'
+                        }
                     },
                 ],
             });
@@ -118,6 +124,39 @@
                 setState(state);
             }
             getState();
+
+            const style = document.createElement("style");
+            if (window.innerHeight < window.innerWidth) {
+                style.textContent = `
+                    .container {
+                        display: flex;
+                        transform: scale(calc(${window.innerWidth}/800));
+                        transform-origin: top
+                    }
+                    .box {
+                        display: grid;
+                        justify-content: end;
+                        width: 50%;
+                        padding: 20px;
+                    }
+                    .wheel {
+                        width: 50%;
+                        padding: 20px;                
+                    }
+                `;
+            } else {
+                style.textContent = `
+                    .box > * {
+                        margin-top: 20px;
+                    }
+                    .container  {
+                        display: grid;
+                        justify-content: center;
+                    }
+                `;
+            }
+            document.head.appendChild(style);
+
         </script>
     </body>
 </html>

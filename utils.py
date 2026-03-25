@@ -18,7 +18,7 @@ def initialize_pwm(pins):
         if pin == "base":
             continue
         pwm = PWM(pins[pin])
-        pwm.freq(1000)
+        pwm.freq(120)
         pwm.duty_u16(0)
         pwms[pin] = pwm
     return pwms
