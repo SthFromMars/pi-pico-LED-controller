@@ -5,6 +5,8 @@ RED_PIN = 13
 GREEN_PIN = 14
 BLUE_PIN = 15
 
+FREQUENCY = 1000
+
 COLOR_CORRECTION = {
     "red": 1,
     "green": 0.4,
