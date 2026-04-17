@@ -9,6 +9,6 @@ FREQUENCY = 1000
 
 COLOR_CORRECTION = {
     "red": 1,
-    "green": 0.4,
-    "blue": 0.4,
+    "green": 0.75,
+    "blue": 0.75,
 }

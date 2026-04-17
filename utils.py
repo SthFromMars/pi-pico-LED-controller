@@ -4,19 +4,15 @@ from utime import sleep
 
 def initialize_pins():
     pins = {
-        "base": Pin("LED", Pin.OUT),
         "red": Pin(RED_PIN, Pin.OUT),
         "green": Pin(GREEN_PIN, Pin.OUT),
         "blue": Pin(BLUE_PIN, Pin.OUT)
     }
-    pins["base"].on()
     return pins
 
 def initialize_pwm(pins):
     pwms = {}
     for pin in pins.keys():
-        if pin == "base":
-            continue
         pwm = PWM(pins[pin])
         pwm.freq(1000)
         pwm.duty_u16(0)
@@ -36,8 +32,7 @@ def deinitialize(pins, pwms):
 
 def convert_hex_to_single_color(hex_color, id):
     bit8 = int(hex_color[id*2+1 : id*2+3], 16)
-    bit16 = bit8 * 257
-    return bit16
+    return bit8
 
 def convert_hex_to_rgb(hex_color):
     color = {
@@ -47,19 +42,23 @@ def convert_hex_to_rgb(hex_color):
     }
     return color
 
+def convert_8bit_to_16bit(bit8):
+    bit16 = {}
+    for color in bit8:
+        bit16[color] = (bit8[color]**2) * 257/255
+    return bit16
+
 def set_color(state, pwms):
     rgb = convert_hex_to_rgb(state["color"])
     if state["use_color_correction"]:
         for color in rgb.keys():
             rgb[color] = rgb[color] * COLOR_CORRECTION[color]
         max_value = max(rgb.values())
-        if max_value < 65535:
-            ratio = 65535 / max_value
+        if max_value < 255:
+            ratio = 255 / max_value
             for color in rgb.keys():
-                rgb[color] *= ratio # type: ignore
-        for color in rgb.keys():
-            rgb[color] = round(rgb[color])
-
+                rgb[color] = round(rgb[color] * ratio)
+    rgb = convert_8bit_to_16bit(rgb)
     for color in rgb.keys():
         duty = round(rgb[color] * state["brightness"] / 100)
         pwms[color].duty_u16(duty)

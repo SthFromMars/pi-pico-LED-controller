@@ -4,10 +4,13 @@ import json
 from utils import initialize_pins, initialize_pwm, deinitialize, change_power, set_color
 from serialization import get_state, write_state
 import re
+from machine import Pin
 
 def main():
     pins = initialize_pins()
     print(connect_to_wifi(SSID, PASSWORD))
+    basePin =  Pin("LED", Pin.OUT)
+    basePin.on()
     state = get_state()
     pwms = None
     if state["turned_on"]:
